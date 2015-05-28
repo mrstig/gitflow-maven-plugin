@@ -105,77 +105,78 @@ public class GitFlowHotfixFinishMojo extends AbstractGitFlowMojo {
             }
 
             // git checkout master
-            gitCheckout(gitFlowConfig.getProductionBranch());
+//            gitCheckout(gitFlowConfig.getProductionBranch());
 
             // git merge --no-ff hotfix/...
-            gitMergeNoff(hotfixBranchName);
+//            gitMergeNoff(hotfixBranchName);
+            gitFlowFinish("hotfix", stripPrefix(hotfixBranchName), keepBranch);
 
-            if (!skipTag) {
-                // git tag -a ...
-                gitTag(gitFlowConfig.getVersionTagPrefix()
-                        + hotfixBranchName.replaceFirst(
-                                gitFlowConfig.getHotfixBranchPrefix(), ""),
-                        "tagging hotfix");
-            }
-
-            // check whether release branch exists
-            // git for-each-ref --count=1 --format="%(refname:short)"
-            // refs/heads/release/*
-            final String releaseBranch = executeGitCommandReturn(
-                    "for-each-ref", "--count=1",
-                    "--format=\"%(refname:short)\"", "refs/heads/"
-                            + gitFlowConfig.getReleaseBranchPrefix() + "*");
-
-            // if release branch exists merge hotfix changes into it
-            if (StringUtils.isNotBlank(releaseBranch)) {
-                // git checkout release
-                gitCheckout(releaseBranch);
-                // git merge --no-ff hotfix/...
-                gitMergeNoff(hotfixBranchName);
-            } else {
+//            if (!skipTag) {
+//                // git tag -a ...
+//                gitTag(gitFlowConfig.getVersionTagPrefix()
+//                        + hotfixBranchName.replaceFirst(
+//                                gitFlowConfig.getHotfixBranchPrefix(), ""),
+//                        "tagging hotfix");
+//            }
+//
+//            // check whether release branch exists
+//            // git for-each-ref --count=1 --format="%(refname:short)"
+//            // refs/heads/release/*
+//            final String releaseBranch = executeGitCommandReturn(
+//                    "for-each-ref", "--count=1",
+//                    "--format=\"%(refname:short)\"", "refs/heads/"
+//                            + gitFlowConfig.getReleaseBranchPrefix() + "*");
+//
+//            // if release branch exists merge hotfix changes into it
+//            if (StringUtils.isNotBlank(releaseBranch)) {
+//                // git checkout release
+//                gitCheckout(releaseBranch);
+//                // git merge --no-ff hotfix/...
+//                gitMergeNoff(hotfixBranchName);
+//            } else {
                 // git checkout develop
-                gitCheckout(gitFlowConfig.getDevelopmentBranch());
+//                gitCheckout(gitFlowConfig.getDevelopmentBranch());
 
                 // git merge --no-ff hotfix/...
-                gitMergeNoff(hotfixBranchName);
+//                gitMergeNoff(hotfixBranchName);
 
                 // get current project version from pom
-                final String currentVersion = getCurrentProjectVersion();
-
-                String nextSnapshotVersion = null;
-                // get next snapshot version
-                try {
-                    final DefaultVersionInfo versionInfo = new DefaultVersionInfo(
-                            currentVersion);
-                    nextSnapshotVersion = versionInfo.getNextVersion()
-                            .getSnapshotVersionString();
-                } catch (VersionParseException e) {
-                    if (getLog().isDebugEnabled()) {
-                        getLog().debug(e);
-                    }
-                }
-
-                if (StringUtils.isBlank(nextSnapshotVersion)) {
-                    throw new MojoFailureException(
-                            "Next snapshot version is blank.");
-                }
-
-                // mvn versions:set -DnewVersion=... -DgenerateBackupPoms=false
-                mvnSetVersions(nextSnapshotVersion);
-
-                // git commit -a -m updating poms for next development version
-                gitCommit("updating poms for next development version");
-            }
+//                final String currentVersion = getCurrentProjectVersion();
+//
+//                String nextSnapshotVersion = null;
+//                // get next snapshot version
+//                try {
+//                    final DefaultVersionInfo versionInfo = new DefaultVersionInfo(
+//                            currentVersion);
+//                    nextSnapshotVersion = versionInfo.getNextVersion()
+//                            .getSnapshotVersionString();
+//                } catch (VersionParseException e) {
+//                    if (getLog().isDebugEnabled()) {
+//                        getLog().debug(e);
+//                    }
+//                }
+//
+//                if (StringUtils.isBlank(nextSnapshotVersion)) {
+//                    throw new MojoFailureException(
+//                            "Next snapshot version is blank.");
+//                }
+//
+//                // mvn versions:set -DnewVersion=... -DgenerateBackupPoms=false
+//                mvnSetVersions(nextSnapshotVersion);
+//
+//                // git commit -a -m updating poms for next development version
+//                gitCommit("updating poms for next development version");
+//            }
 
             if (installProject) {
                 // mvn clean install
                 mvnCleanInstall();
             }
 
-            if (!keepBranch) {
-                // git branch -d hotfix/...
-                gitBranchDelete(hotfixBranchName);
-            }
+//            if (!keepBranch) {
+//                // git branch -d hotfix/...
+//                gitBranchDelete(hotfixBranchName);
+//            }
         } catch (CommandLineException e) {
             getLog().error(e);
         }

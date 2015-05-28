@@ -77,8 +77,9 @@ public class GitFlowFeatureStartMojo extends AbstractGitFlowMojo {
             }
 
             // git checkout -b ... develop
-            gitCreateAndCheckout(gitFlowConfig.getFeatureBranchPrefix()
-                    + featureName, gitFlowConfig.getDevelopmentBranch());
+//            gitCreateAndCheckout(gitFlowConfig.getFeatureBranchPrefix()
+//                    + featureName, gitFlowConfig.getDevelopmentBranch());
+            gitFlowStart("feature", featureName, null);
 
             if (!skipFeatureVersion) {
                 // get current project version from pom

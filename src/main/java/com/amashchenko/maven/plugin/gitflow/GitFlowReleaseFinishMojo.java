@@ -15,6 +15,7 @@
  */
 package com.amashchenko.maven.plugin.gitflow;
 
+import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -85,24 +86,26 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
             }
 
             // git checkout master
-            gitCheckout(gitFlowConfig.getProductionBranch());
+//            gitCheckout(gitFlowConfig.getProductionBranch());
+//
+//            // git merge --no-ff release/...
+//            gitMergeNoff(gitFlowConfig.getReleaseBranchPrefix()
+//                    + releaseVersion);
+//
+//            if (!skipTag) {
+//                // git tag -a ...
+//                gitTag(gitFlowConfig.getVersionTagPrefix() + releaseVersion,
+//                        "tagging release");
+//            }
 
-            // git merge --no-ff release/...
-            gitMergeNoff(gitFlowConfig.getReleaseBranchPrefix()
-                    + releaseVersion);
-
-            if (!skipTag) {
-                // git tag -a ...
-                gitTag(gitFlowConfig.getVersionTagPrefix() + releaseVersion,
-                        "tagging release");
-            }
-
+            gitFlowFinish("release", releaseVersion, false);
+            
             // git checkout develop
             gitCheckout(gitFlowConfig.getDevelopmentBranch());
 
             // git merge --no-ff release/...
-            gitMergeNoff(gitFlowConfig.getReleaseBranchPrefix()
-                    + releaseVersion);
+//            gitMergeNoff(gitFlowConfig.getReleaseBranchPrefix()
+//                    + releaseVersion);
 
             // get current project version from pom
             final String currentVersion = getCurrentProjectVersion();
@@ -111,9 +114,15 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
             // get next snapshot version
             try {
                 final DefaultVersionInfo versionInfo = new DefaultVersionInfo(
-                        currentVersion);
-                nextSnapshotVersion = versionInfo.getNextVersion()
-                        .getSnapshotVersionString();
+                        currentVersion) {
+                            
+                        };
+                List<String> d = versionInfo.getDigits();
+                String minorVersion = d.get(1);
+                int mV = Integer.valueOf(minorVersion);
+                d.set( 1, "" + (mV+1) );
+                DefaultVersionInfo next = new DefaultVersionInfo(d, null, null, null, null, null, null);
+                nextSnapshotVersion = next.getSnapshotVersionString();
             } catch (VersionParseException e) {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(e);
@@ -136,11 +145,11 @@ public class GitFlowReleaseFinishMojo extends AbstractGitFlowMojo {
                 mvnCleanInstall();
             }
 
-            if (!keepBranch) {
-                // git branch -d release/...
-                gitBranchDelete(gitFlowConfig.getReleaseBranchPrefix()
-                        + releaseVersion);
-            }
+//            if (!keepBranch) {
+//                // git branch -d release/...
+//                gitBranchDelete(gitFlowConfig.getReleaseBranchPrefix()
+//                        + releaseVersion);
+//            }
         } catch (CommandLineException e) {
             getLog().error(e);
         }

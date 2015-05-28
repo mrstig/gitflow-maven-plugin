@@ -56,8 +56,9 @@ public class GitFlowSupportStartMojo extends AbstractGitFlowMojo {
             try {
                 final DefaultVersionInfo versionInfo = new DefaultVersionInfo(
                         currentVersion);
-                defaultVersion = versionInfo.getNextVersion()
-                        .getReleaseVersionString();
+                final DefaultVersionInfo supVersion = new DefaultVersionInfo(
+                        versionInfo.getDigits().subList(0, 2), null, null, null, null, null, null);
+                defaultVersion = supVersion.getReleaseVersionString();
             } catch (VersionParseException e) {
                 if (getLog().isDebugEnabled()) {
                     getLog().debug(e);
@@ -65,11 +66,13 @@ public class GitFlowSupportStartMojo extends AbstractGitFlowMojo {
             }
 
             String version = null;
-            try {
-                version = prompter.prompt("What is the support version? ["
-                        + defaultVersion + "]");
-            } catch (PrompterException e) {
-                getLog().error(e);
+            if (settings.isInteractiveMode()) {
+                try {
+                    version = prompter.prompt("What is the support version? ["
+                            + defaultVersion + "]");
+                } catch (PrompterException e) {
+                    getLog().error(e);
+                }
             }
 
             if (StringUtils.isBlank(version)) {
@@ -87,15 +90,17 @@ public class GitFlowSupportStartMojo extends AbstractGitFlowMojo {
             }
 
             // git checkout -b support/... master
-            gitCreateAndCheckout(gitFlowConfig.getSupportBranchPrefix()
-                    + version, gitFlowConfig.getProductionBranch());
+//            gitCreateAndCheckout(gitFlowConfig.getSupportBranchPrefix()
+//                    + version, gitFlowConfig.getProductionBranch());
 
+            gitFlowStart("support", version, "master");
+            
             // mvn versions:set -DnewVersion=... -DgenerateBackupPoms=false
             mvnSetVersions(version);
 
             // git commit -a -m updating poms for support
             gitCommit("updating poms for support");
-
+            System.out.println("Committed.");
             if (installProject) {
                 // mvn clean install
                 mvnCleanInstall();

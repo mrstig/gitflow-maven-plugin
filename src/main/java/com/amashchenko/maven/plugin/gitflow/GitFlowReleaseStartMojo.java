@@ -43,16 +43,16 @@ public class GitFlowReleaseStartMojo extends AbstractGitFlowMojo {
             // check uncommitted changes
             checkUncommittedChanges();
 
-            // git for-each-ref --count=1 refs/heads/release/*
-            final String releaseBranch = executeGitCommandReturn(
-                    "for-each-ref", "--count=1",
-                    "refs/heads/" + gitFlowConfig.getReleaseBranchPrefix()
-                            + "*");
-
-            if (StringUtils.isNotBlank(releaseBranch)) {
-                throw new MojoFailureException(
-                        "Release branch already exists. Cannot start release.");
-            }
+//            // git for-each-ref --count=1 refs/heads/release/*
+//            final String releaseBranch = executeGitCommandReturn(
+//                    "for-each-ref", "--count=1",
+//                    "refs/heads/" + gitFlowConfig.getReleaseBranchPrefix()
+//                            + "*");
+//
+//            if (StringUtils.isNotBlank(releaseBranch)) {
+//                throw new MojoFailureException(
+//                        "Release branch already exists. Cannot start release.");
+//            }
 
             // need to be in develop to get correct project version
             // git checkout develop
@@ -88,9 +88,12 @@ public class GitFlowReleaseStartMojo extends AbstractGitFlowMojo {
             }
 
             // git checkout -b release/... develop
-            gitCreateAndCheckout(gitFlowConfig.getReleaseBranchPrefix()
-                    + version, gitFlowConfig.getDevelopmentBranch());
+//            gitCreateAndCheckout(gitFlowConfig.getReleaseBranchPrefix()
+//                    + version, gitFlowConfig.getDevelopmentBranch());
 
+            gitFlowStart("release", version, null);
+            gitCheckout(gitFlowConfig.getReleaseBranchPrefix()+ version);
+            
             // mvn versions:set -DnewVersion=... -DgenerateBackupPoms=false
             mvnSetVersions(version);
 

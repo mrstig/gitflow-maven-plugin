@@ -16,6 +16,9 @@
 package com.amashchenko.maven.plugin.gitflow;
 
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -232,6 +235,20 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
             throws MojoFailureException, CommandLineException {
         // ignore error exit codes
         executeGitCommandExitCode("config", name, value);
+    }
+
+    /**
+     * Executes git config command.
+     * 
+     * @param name
+     *            Option name.
+     * @throws MojoFailureException
+     * @throws CommandLineException
+     */
+    protected String gitGetConfig(final String name)
+            throws MojoFailureException, CommandLineException {
+        // ignore error exit codes
+        return executeGitCommandReturn("config", name);
     }
 
     /**
@@ -519,5 +536,30 @@ public abstract class AbstractGitFlowMojo extends AbstractMojo {
             }
         }
         return ret;
+    }
+
+    protected void gitFlowStart(String type, String name, String base) throws CommandLineException, MojoFailureException {
+        List<String> args = new ArrayList<>(Arrays.asList("flow", type, "start", name));
+        if ( base != null )
+            args.add(base);
+        executeGitCommand(args.toArray(new String[0]));
+    }
+    
+    protected void gitFlowFinish(String type, String name, boolean keepBranch) throws CommandLineException, MojoFailureException {
+//        if (keepBranch)
+//            throw new UnsupportedOperationException("keepBranch not implemented");
+        List<String> args = new ArrayList<>(Arrays.asList("flow", type, "finish", name));
+        if ( type.equals("release") || type.equals("hotfix") )
+            args.add("-n");
+        executeGitCommand(args.toArray(new String[0]));
+    }
+    
+//    protected void gitFlowFeatureStart(String featureBranchName, String base) throws CommandLineException, MojoFailureException {
+//        gitFlowStart("feature", featureBranchName, base);
+//    }
+
+    // hackish, should check stuff
+    protected String stripPrefix(String fullBranch) {
+        return fullBranch.substring(fullBranch.indexOf("/") + 1);
     }
 }

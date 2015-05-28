@@ -55,7 +55,7 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
                     .getFeatureBranchPrefix());
 
             if (StringUtils.isBlank(featureBranches)) {
-                throw new MojoFailureException("There is no feature branches.");
+                throw new MojoFailureException("There are no feature branches.");
             }
 
             final String[] branches = featureBranches.split("\\r?\\n");
@@ -102,7 +102,8 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
             gitCheckout(gitFlowConfig.getDevelopmentBranch());
 
             // git merge --no-ff feature/...
-            gitMergeNoff(featureBranchName);
+//            gitMergeNoff(featureBranchName);
+            gitFlowFinish("feature", stripPrefix(featureBranchName), keepBranch);
 
             // get current project version from pom
             final String currentVersion = getCurrentProjectVersion();
@@ -126,12 +127,14 @@ public class GitFlowFeatureFinishMojo extends AbstractGitFlowMojo {
                 mvnCleanInstall();
             }
 
-            if (!keepBranch) {
-                // git branch -d feature/...
-                gitBranchDelete(featureBranchName);
-            }
+//            if (!keepBranch) {
+//                // git branch -d feature/...
+//                gitBranchDelete(featureBranchName);
+//            }
         } catch (CommandLineException e) {
             getLog().error(e);
         }
     }
+
+
 }

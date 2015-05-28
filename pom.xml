@@ -17,13 +17,13 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.amashchenko.maven.plugin</groupId>
+    <groupId>org.zy.maven.plugin</groupId>
     <artifactId>gitflow-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
     <name>gitflow-maven-plugin</name>
-    <version>1.0.9-SNAPSHOT</version>
+    <version>1.0.9-support-SNAPSHOT</version>
 
-    <description>Git-Flow Maven Plugin, which runs Git and Maven commands from the command line.</description>
+    <description>Git-Flow Maven Plugin, which runs Git and Maven commands from the command line. Originally https://github.com/aleksandr-m/gitflow-maven-plugin.</description>
  
     <inceptionYear>2014</inceptionYear>
 
@@ -75,8 +75,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>

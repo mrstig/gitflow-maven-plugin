@@ -15,6 +15,9 @@
  */
 package com.amashchenko.maven.plugin.gitflow;
 
+import static com.amashchenko.maven.plugin.gitflow.AbstractGitFlowMojo.LS;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -26,14 +29,16 @@ import org.codehaus.plexus.util.cli.CommandLineException;
 
 /**
  * The git flow hotfix start mojo.
- * 
+ *
  * @author Aleksandr Mashchenko
- * 
+ *
  */
 @Mojo(name = "hotfix-start", aggregator = true)
 public class GitFlowHotfixStartMojo extends AbstractGitFlowMojo {
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
@@ -43,9 +48,54 @@ public class GitFlowHotfixStartMojo extends AbstractGitFlowMojo {
             // check uncommitted changes
             checkUncommittedChanges();
 
+            String supportBranchName = gitFlowConfig.getProductionBranch();
+
+            // git for-each-ref --format='%(refname:short)' refs/heads/feature/*
+            final String supportBranches = gitFindBranches(gitFlowConfig
+                    .getSupportBranchPrefix());
+
+            if (!StringUtils.isBlank(supportBranches)) {
+
+                final String[] branches = supportBranches.split("\\r?\\n");
+
+                List<String> numberedList = new ArrayList<String>();
+                StringBuilder str = new StringBuilder("Support branches:")
+                        .append(LS);
+                str.append((0) + ". " + gitFlowConfig.getProductionBranch() + LS);
+                for (int i = 0; i < branches.length; i++) {
+                    str.append((i + 1) + ". " + branches[i] + LS);
+                    numberedList.add(String.valueOf(i + 1));
+                }
+                str.append("Choose support branch to hotfix");
+
+                String featureNumber = null;
+                try {
+                    while (StringUtils.isBlank(featureNumber)) {
+                        featureNumber = prompter.prompt(str.toString(),
+                                numberedList);
+                    }
+                } catch (PrompterException e) {
+                    getLog().error(e);
+                }
+
+                if (featureNumber != null) {
+                    int num = Integer.parseInt(featureNumber);
+                    if (num == 0) {
+                        supportBranchName = gitFlowConfig.getProductionBranch();
+                    } else {
+                        supportBranchName = branches[num - 1];
+                    }
+                }
+
+                if (StringUtils.isBlank(supportBranchName)) {
+                    throw new MojoFailureException(
+                            "Branch name to hotfix is blank.");
+                }
+            }
+
             // need to be in master to get correct project version
             // git checkout master
-            gitCheckout(gitFlowConfig.getProductionBranch());
+            gitCheckout(supportBranchName);
 
             String defaultVersion = "1.0.1";
 
@@ -79,7 +129,7 @@ public class GitFlowHotfixStartMojo extends AbstractGitFlowMojo {
             // git for-each-ref refs/heads/hotfix/...
             final String hotfixBranch = executeGitCommandReturn("for-each-ref",
                     "refs/heads/" + gitFlowConfig.getHotfixBranchPrefix()
-                            + version);
+                    + version);
 
             if (StringUtils.isNotBlank(hotfixBranch)) {
                 throw new MojoFailureException(
@@ -87,8 +137,9 @@ public class GitFlowHotfixStartMojo extends AbstractGitFlowMojo {
             }
 
             // git checkout -b hotfix/... master
-            gitCreateAndCheckout(gitFlowConfig.getHotfixBranchPrefix()
-                    + version, gitFlowConfig.getProductionBranch());
+//            gitCreateAndCheckout(gitFlowConfig.getHotfixBranchPrefix()
+//                    + version, gitFlowConfig.getProductionBranch());
+            gitFlowStart("hotfix", version, supportBranchName);
 
             // mvn versions:set -DnewVersion=... -DgenerateBackupPoms=false
             mvnSetVersions(version);
